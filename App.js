@@ -45,7 +45,9 @@ function Items({ done: doneHeading, onPressItem }) {
 						padding: 8
 					}}
 				>
-					<Text style={{ color: done ? '#fff' : '#000' }}>{value}</Text>
+					<Text style={{ color: done ? '#fff' : '#000' }}>
+						{value}
+					</Text>
 				</TouchableOpacity>
 			))}
 		</View>
@@ -56,13 +58,26 @@ function Items({ done: doneHeading, onPressItem }) {
 export default function App() {
 
 	const [text, setText] = useState('');
+	const [forceUpdate, forceUpdateId] = useForceUpdate();
 
 	const addData = (text) => {
 		if (text === null || text === '') {
 			return false;
 		}
 
-		console.log(text);
+		db.transaction(
+			tx => {
+				tx.executeSql(
+					'insert into items (done, value) values (0, ?)',
+					[text]
+				);
+				tx.executeSql('select * from items', [], (_, { rows }) =>
+					console.log(JSON.stringify(rows))
+				);
+			},
+			null,
+			forceUpdate
+		);
 	}
 
 	return (
@@ -120,6 +135,11 @@ export default function App() {
 
 		</View>
 	);
+}
+
+function useForceUpdate() {
+	const [value, setValue] = useState(0);
+	return [() => setValue(value + 1), value];
 }
 
 const styles = StyleSheet.create({
