@@ -60,7 +60,15 @@ export default function App() {
 	const [text, setText] = useState('');
 	const [forceUpdate, forceUpdateId] = useForceUpdate();
 
-	const addData = (text) => {
+	useEffect(() => {
+		db.transaction(tx => {
+			tx.executeSql(
+				'create table if not exists items (id integer primary key not null, done int, value text);'
+			);
+		});
+	}, []);
+
+	const add = (text) => {
 		if (text === null || text === '') {
 			return false;
 		}
@@ -93,7 +101,7 @@ export default function App() {
 						setText(text);
 					}}
 					onSubmitEditing={() => {
-						addData(text);
+						add(text);
 						setText('');
 					}}
 					placeholder="Enter Command"
